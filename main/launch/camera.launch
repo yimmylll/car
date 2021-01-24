@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<launch>
+  <!-- Logger config -->
+  <env name="ROSCONSOLE_CONFIG_FILE"
+       value="$(find lexiao_camera)/config/lexiao_camera.config"/>
+
+  <!-- Arguments -->
+  <!-- Camera params (config) -->
+  <arg name="params" default="$(find lexiao_camera)/config/camera/webcam.yaml"/>
+  <!-- Camera name. -->
+  <arg name="camera" default="/camera"/>
+  <!-- View camera stream. -->
+  <arg name="view" default="false"/>
+  <!-- Config camera stream. -->
+  <arg name="config" default="false"/>
+  <!-- Save camera stream. -->
+  <arg name="save" default="false"/>
+  <!-- Calibrate. -->
+  <arg name="calibrate" default="false"/>
+  <!-- Check calibration. -->
+  <arg name="check" default="false"/>
+  <!-- Visual Odometry. -->
+  <arg name="odometry" default="false"/>
+
+  <!-- Run driver -->
+  <node name="camera" pkg="lexiao_camera" type="camera" output="screen">
+    <rosparam file="$(arg params)" command="load"/>
+  </node>
+
+  <!-- Camera image processing (color, rect) -->
+  <node ns="$(arg camera)" pkg="image_proc" type="image_proc" name="image_proc"/>
+
+  <group if="$(arg view)">
+    <node name="view" pkg="image_view" type="image_view">
+      <remap from="image" to="$(arg camera)/image_raw"/>
+    </node>
+  </group>
+
+  <group if="$(arg config)">
+      <node name="config" pkg="dynamic_reconfigure" type="reconfigure_gui"
+            args="$(arg camera)"/>
+  </group>
+
+
+</launch>
+
