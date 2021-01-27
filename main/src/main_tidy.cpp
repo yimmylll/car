@@ -88,19 +88,19 @@ int main(int argc, char **argv)
 
     vector<double> path;
     int pathSize=0;
+
     int start;
-
-    int stop;
-    int pstop=1;//初始不刹车
-
+    int pstart=0;
 	int tu;
+    int singlepoint=0;
     int go=0;
+    double dis;
     double ilat ;
     double ilon ;
     double tlat ;
     double tlon ;
     double igpsangle;
-    float pGas=0;
+    float pGas = 0;
     int targetIndex=0;	
     int manualMode = 0;
     //bool ismanualBack = 0;
@@ -110,12 +110,11 @@ int main(int argc, char **argv)
 	int startCntF = 0;
     // 用于本地发送路径，只有当patho为0的时候发送一次
     int patho = 0;//
-    int manualBack_go = 0;//手动倒车开始标志
-	int manualFront_go = 0;//手动前进开始标志
 
 //	int stop_DelayTimes = 31;//初始不刹车释放
 /**********************************************/
     gas(0.0);
+    pGas = 0;
     brake(0.0);
     // 为了避免大角度的转向，在开始之前将角度设为0
     G_steer = 0;
@@ -133,21 +132,12 @@ int main(int argc, char **argv)
 
 
 	 /********************************刹车测试*********************************/
+	// brake(0.0);
+    // printf("brake0\n");
+	// delay_1s(2);
+	// return 0;
 
-	//  while(ros::ok())//转向
-	//   {
-	//      loop_rate.sleep();
-	//      ros::spinOnce(); 
-	// 	// printf("brake0\n");
-	//      brake(0.0);
-	//   }
-	//  printf("brake0\n");
-	//   brake(0.0);
-	//     delay_1s(2);
-	//    return 0;
-
-
-	   /********************************compelStop1 compelStart1测试*********************************/
+	/********************************compelStop1 compelStart1测试*********************************/
 	// delay_1s(1);
 	// printf("初始getStart:%d  getStop:%d  getTurn():%d\n", getStart(), getStop(), getTurn());
 	// compelStop1();
@@ -186,53 +176,42 @@ int main(int argc, char **argv)
 
     /***************小车控制转向测试 new steer*********************************/
     // int delayTimes1 = 0;
-    // printf("start\n");
-    // gas(1.5);
-    // delay_1s(3);
-    //printf("steer-15\n");
-    //  while(ros::ok())//转向
-    //  {
-    //     loop_rate.sleep();
-    //     ros::spinOnce(); 
-    //     gas(0.0);
-    //    delayTimes1++;
-    //    steer(-15.0);//每次1°
-    //    if(delayTimes1==30)//3s
-    //    {break;}
-     // }   
-    //printf("gas0\n");
-   // gas(0.0);
-    //printf("steer0\n");
-    //delayTimes1 = 0;
-    //while(ros::ok())//回正
-    //{
-    //    loop_rate.sleep();
-    //    delayTimes1++;
-    //    steer(0.0);
-    //    if(delayTimes1==20)//0.02s
-    //    {break;}
-    //}
-    // printf("car back!\n");
-    // gas(-1.0);
-     //delay_1s(1);
-    // printf("car stop\n");
-    //  int delaytime000=0;
-    // while(ros::ok())
+    // printf("start steer-15\n");
+    // while(ros::ok())//转向
     // {
     //     loop_rate.sleep();
     //     ros::spinOnce(); 
     //     gas(0.0);
-    //     delaytime000++;
-    //     if(delaytime000==10){
-    //         break;
-    //     }
+    //     delayTimes1++;
+    //     steer(-15.0);//每次1°
+    //     if(delayTimes1==20)//2s
+    //     {break;}
     // }
+    // printf("start go 2s\n");
+    // gas(1.5);
+    // delay_1s(2);   
+    // printf("stop\n");
+    // gas(0.0);
+    // printf("steer0\n");
+    // delayTimes1 = 0;
+    // while(ros::ok())//回正
+    // {
+    //    loop_rate.sleep();
+    //    delayTimes1++;
+    //    steer(0.0);
+    //    if(delayTimes1==20)//2s
+    //    {break;}
+    // }
+    // printf("car back!\n");
+    // gas(-1.0);
+    // delay_1s(1);
+    // printf("car stop\n");
     // gas(0.0);
     // brake(brakeV);
     // delay_1s(2);
     // brake(0.0);
-    //    delay_1s(2);
-    //    return 0;
+    // delay_1s(2);
+    // return 0;
     /********************************************双目测试********************************************/
     // while(ros::ok())
     //  {
@@ -365,74 +344,75 @@ int main(int argc, char **argv)
     }
     printf("ID:%016d 云接入成功\n", ID);
     delay_1s(1);
-    //1111
 
     /****************************************cloud测试代码******************************************/
-	////reachTarget() 到达目的地命令    cannotAvoidObstacles() 不能规避障碍命令  reportCurrentLatLon(ilat,ilon) 报告当前位置
+	//reachTarget() 到达目的地命令    cannotAvoidObstacles() 不能规避障碍命令  reportCurrentLatLon(ilat,ilon) 报告当前位置
 	//  bool lastStart = 0;
-	//  bool lastStop = 1;
 	//  bool lastTurn = 0;
 	//  int lastManualModel = 0;
 	//  bool lastShutdown = 0;
+    //  bool lastSinglePoint = 0;
 	//  while(ros::ok())
 	//  {
-	//  		//printf("****************************************\n");
-	//  		if(cloudPathValid==1){printf("cloudPathValid:%d\n",cloudPathValid);}
-    //          printf("getManualModel:%d\n",getManualModel());
+	//  	//打印路径数据
+	//     if(cloudPathValid == 1) 
+    //     {   
+	//         path = getPath();      // 获取路径数据
+	//         int pathSize=path.size()/2;
+	//         printf("获取经纬度路径:%d条\n", pathSize);
+	//         for (int i = 0; i < path.size();i++) 
+    //         {
+	//             cout << path[i] << " ";
+	//         }
+	//         cout << " " << endl;
+	//     }
+    //     //打印命令
+	//  	if(getStart() == true && getStart() != lastStart) 
+    //     {   printf("开始自动驾驶\n");} 
+    //     else if(getStart() == false && getStart() != lastStop) 
+    //     {   printf("停止自动驾驶\n");} 
+        
+    //     if(getTurn() == true && getTurn() != lastTurn) 
+    //     {   printf("开启绕障模式\n");}
+    //     else if(getTurn() == false && getTurn() != lastTurn)
+    //     {   printf("关闭绕障模式\n");}
+        
+    //     if(getManualModel()==1 && getManualModel() != lastManualModel)
+    //     {   printf("开启手动front模式\n");}
+    //     else if(getManualModel()==2 && getManualModel() != lastManualModel)
+    //     {	printf("开启手动back模式\n");}
+    //     else if(getManualModel()==0 && getManualModel() != lastManualModel)//compelManualModelfalse
+    //     {   printf("自动驾驶模式\n");}
+    //     else
+    //     {   printf("ERROR: manualmode=%d\n",getManualModel());}
+		
+    //     if (getShutdown() == true && getShutdown() != lastShutdown) 
+    //     {  printf("关闭小车\n");}
 
-	//      if(cloudPathValid == 1) {   // cloudPathValid为1时表面路径数据已经准备好
-	//          path = getPath(0);      // 获取路径数据
-	//          int pathSize=path.size()/2;
-	//          printf("获取经纬度路径:%d条\n", pathSize);
-	//          for (int i = 0; i < path.size();i++) {  // 打印路径数据
-	//              cout << path[i] << " ";
-	//          }
-	//          cout << " " << endl;
-	// 			printf("getStart:%d  getStop:%d\n",getStart(),getStop());
-	//      }
-	//  	   if(getStart() == true && getStart() != lastStart) {
-	//          printf("开始自动驾驶\n");
-	//      } else if(getStop() == true && getStop() != lastStop) {
-	//          printf("停止自动驾驶\n");
-	//      } else if(getTurn() == true && getTurn() != lastTurn) {
-	//          printf("躲避障碍物\n");
-	//      } else if(getManualModel()==1 && getManualModel() != lastManualModel){
-	//  			printf("开启手动front模式\n");
-	//  	   }
-    //        else if(getManualModel()==2 && getManualModel() != lastManualModel){
-	//  			printf("开启手动back模式\n");
-	// 	  }
-    //       else if(getManualModel()==0 && getManualModel() != lastManualModel)//compelManualModelfalse
-    //       {
-    //           printf("自动驾驶模式\n");
-    //       }
-	// 		else if (getShutdown() == true && getShutdown() != lastShutdown) {
-	// 		   printf("关闭小车\n");
-	// 	  }
-	//      lastStart = getStart();
-	//      lastStop = getStop();
-	//      lastTurn = getTurn();
-	//  	   lastManualModel=getManualModel();
-	// 	  lastShutdown = getShutdown();
-	//  	/**********************向云平台发送路径测试代码********************************/
-	//     //  delayTimes++;//
-	//     //  if(delayTimes == 30) {     // 每3s报告当前位置
-	//  	// 	   ilat = cfGpsLat();
-	//  	// 	   ilon = cfGpsLon();
-	//     //      reportCurrentLatLon(ilat, ilon);
-	//     //      printf("lat:%f   lon:%f\n", ilat, ilon);
-	//  	// 	   delayTimes = 0;
-	//     //  }
-	//      loop_rate.sleep();
+    //     if (getSinglePoint() == 1 && getSinglePoint() != lastSinglePoint)
+    //     {   printf("开启单点模式\n");}
+    //     else if (getSinglePoint() == 0 && getSinglePoint() != lastSinglePoint)
+    //     {   printf("关闭单点模式\n");}
+	//     lastStart = getStart();
+	//     lastStop = getStop();
+	//     lastTurn = getTurn();
+	//  	lastManualModel=getManualModel();
+	// 	lastShutdown = getShutdown();
+    //     lastSinglePoint = getSinglePoint();
+	 	
+	//     loop_rate.sleep();
 	//  }
 	//  return 0;
 	/********************************************end**************************************************/
 
-    /*********************每5s发送一次当前位置************************************/
+    /*******************GPS打印：每5s发送一次当前位置************************************/
     // while (ros::ok())
     // {
     //     delayTimes++;
     //     if (delayTimes == 50) {
+    //         //记录当前GPS坐标和方向角
+    //         ilat = cfGpsLat();
+	// 		ilon = cfGpsLon();
     //         reportCurrentLatLon(ilat, ilon);
     //         printf("报告当前位置  ilat:%f  ilon:%f\n",ilat,ilon);
     //         delayTimes = 0;
@@ -445,24 +425,12 @@ int main(int argc, char **argv)
     delay_1s(1);
     while(ros::ok())
     {
-		//printf("enter while\n");
-	
-         //printf("tofObstacle: %d\n",tofObstacle());
-        // printf("bieyeobstacle: %lf\n",bieyeObstacle());
-        //continue;
-        
-        //double idistance getDistance(ilat, ilon,)
-        // printf("lat:%f   lon:%f\n", ilat, ilon);
-        // continue;
-        //moveTarget(ilat, ilon, 3156.913886, 11204.859963, igpsangle, 0.5, 2.5, 500, 3);
-		// printf("cloudPathValid:%d\n", cloudPathValid);
-        // printf("carCounter: %d\n", getCarCounter());
-        // 获取路径
+        ros::spinOnce();
         loop_rate.sleep();
 
          //检测云平台是否关机
 		if (getShutdown()) {
-            printf("Enter getShutdown!\n");
+            printf("MES:Enter getShutdown!\n");
 			gas(0.0);
 			brake(brakeV);
 			delay_1s(3);
@@ -478,7 +446,10 @@ int main(int argc, char **argv)
 		start = getStart();
 
 		//检测云平台是否绕障碍
-		tu=getTurn();
+		tu = getTurn();
+
+        //检测云平台是否单点模式
+        singlepoint = getSinglePoint();//to do....................
 
         // 检测GPS, getGpsStatus输入1模拟真实GPS，输入0模拟丢失GPS
 		getGpsStatus();
@@ -487,18 +458,37 @@ int main(int argc, char **argv)
 		// 当patho为1时，获取真实GPS，之后再也不会获取真实GPS，以此来模拟惯导
 		//patho++;
 
-        //每5s发送一次当前位置
-        delayTimes++;
-        if (delayTimes == 50) {
-            reportCurrentLatLon(ilat, ilon);
-            printf("报告当前位置  ilat:%f  ilon:%f\n",ilat,ilon);
-            delayTimes = 0;
+        
+        if (G_lostGps == false)//自动模式下有GPS差分信号
+        {
+            //记录当前GPS坐标和方向角
+            ilat = cfGpsLat();
+			ilon = cfGpsLon();
+			igpsangle = cfGpsAngle();
+
+            //每5s发送一次当前位置
+            delayTimes++;
+            if (delayTimes == 50) 
+            {
+                reportCurrentLatLon(ilat, ilon);
+                printf("MES:报告当前位置 ilat:%f  ilon:%f\n",ilat,ilon);
+                delayTimes = 0;
+            }
+
+            //存储所有全局变量,惯导用
+            G_dx = latToMeter(ilat, path[2*targetIndex]);   // 小车坐标系
+            G_dy = lonToMeter(ilon, path[2*targetIndex+1]); // 小车坐标系
+            G_angle = gpsAngleToCoordinate(igpsangle);      // 小车坐标系
+            G_car.x = 0.0;                                  // carH坐标系
+            G_car.y = 0.0;                                  // carH坐标系
+            G_car.ang = coorToCarHAngle(G_angle);           // carH坐标系
+            G_carCounter = getCarCounter();
         }
 
         //接收路径
         if (cloudPathValid == 1)
         {
-            printf("enter: cloudPathValid == 1\n");
+            printf("MES:enter cloudPathValid == 1\n");
             vector<double>().swap(path);
             path=getPath();//cloudPathValid会清0
             pathSize=path.size()/2;
@@ -512,6 +502,7 @@ int main(int argc, char **argv)
                     G_carCounter = startCntF; //G_carCounter？
                     angleFront = (0.5 - path[1])*60.0;//反过来!
                     compelStart1();
+                    //printf("    手动前进pathsize:%d  path[0]:%8.4f  path[1]:%8.4f \n", pathSize, path[0], path[1]);//y,x 经、纬度
                     printf("    angleFront:%f\n", angleFront);
                 }
                 else if (manualMode == 2)
@@ -521,11 +512,13 @@ int main(int argc, char **argv)
                     G_carCounter = startCnt; //G_carCounter？
                     angleBack = (path[1] - 0.5)*60.0;
                     compelStart1();
+                    //printf("    手动倒退pathsize:%d  path[0]:%8.4f  path[1]:%8.4f \n", pathSize, path[0], path[1]);//y,x 经、纬度
                     printf("    angleBack:%f\n", angleBack);
                 }
                 else
                 {
-                    printf("    AutoDrive pathSize:%d\n", pathSize);
+                    printf("    AutoDrive--pathSize:%d\n", pathSize);
+                    compelStop1();
                 }
                 
             }
@@ -533,18 +526,21 @@ int main(int argc, char **argv)
             {
                 printf("ERROR: pathSize:%d  pathSize<=0\n", pathSize);
             }
-            
         }
         
 		
 		//停止小车
-		if (start == 0) 
+		if (start == 0)
         {
 			if (pstart == 1) 
             {
 				gas(0.0);
-				pGas = 0;
-    			printf("car stop!---\n");
+                pGas = 0;
+                if(singlepoint == 1)//单点模式
+                {   brake(brakeV);}
+                else
+                {   brake(0.0);}
+    			printf("MES:car stop!---\n");
 			}
 			pstart = start;
 			continue;
@@ -553,30 +549,115 @@ int main(int argc, char **argv)
         //启动小车
         else
         {
+            pstart = start;
             brake(0.0);
 
             if (manualMode==1)//手动前进
             {
-                /**/
+                moveForward(angleFront, FrontgasV, FrontmoveDistance, startCntF);
+                if (frontfinish == 1) {//前进到达目的地 标志
+                    frontfinish = 0;
+                    targetIndex = 1;
+                    compelStop1();//开启强迫停止
+                    printf("MES:manual_front finish\n");
+                }
+                continue;
             }
             else if (manualMode==2)//手动后退
             {
-                /**/
+                moveBack(angleBack, BackgasV, BackmoveDistance, startCnt);
+                if(backfinish==1){//倒车到达目的地 标志
+                    backfinish = 0;
+                    targetIndex=1;
+                    compelStop1();//开启强迫停止
+                    printf("MES:manual_back finish\n"); 
+                }
+                continue;
             }
             else//自动驾驶
             {
-                /* code */
+                //计算离当前目标距离
+                if (G_lostGps == true)///////惯导
+                {
+                    dis = getDistanceInMeter(G_car);
+                    printf("Warning:Lost GPS");
+                    // printf("    G_car.x:%f  G_car.y:%f  \
+                    // G_dx:%f  G_dy:%f\n", G_car.x, G_car.y,G_dx, G_dy);
+                }
+                else//GPS
+                {
+                    dis = getDistance(ilat, ilon, path[2*targetIndex], path[2*targetIndex+1]);
+		        	//printf("    ilat:%f  ilon:%f  path[2*targetIndex]:%f  path[2*targetIndex+1]:%f   targetIndex:%d\n", ilat, ilon, path[2 * targetIndex], path[2 * targetIndex + 1],targetIndex);
+                }
+                printf("MES:离目标距离 %f m\n", dis);
+
+                /***************************/
+                if (dis < minDistance)//到达当前目标点
+                {
+                    printf("MES:reach target%d\n", targetIndex);
+                    targetIndex++;
+                    FirstWrongCnt = 0;
+                }
+                else//未到达当前目标点
+                {
+                    if (tu)//绕障
+                    {
+                        if(G_lostGps == true)
+                        {
+                            moveTargetWithTurnInMeter(G_car, minDistance, gasV*gasRatio+pGas*(1-gasRatio), brakeV, brakeDealyTime,pGas,angleDis);
+                        }
+                        else
+                        {
+                            moveTargetWithTurn(ilat, ilon, path[2*targetIndex], path[2*targetIndex+1], igpsangle, minDistance, gasV*gasRatio+pGas*(1-gasRatio), brakeV, brakeDealyTime,pGas,angleDis);
+                        }
+                    }
+                    else//避障
+                    {
+                        if(G_lostGps == true)
+                        {
+                            moveTargetWithStopInMeter(G_car, minDistance, gasV*gasRatio+pGas*(1-gasRatio), brakeV, brakeDealyTime,pGas,angleDis);
+                        } 
+                        else 
+                        {
+                            moveTargetWithStop(ilat, ilon, path[2*targetIndex], path[2*targetIndex+1], igpsangle, minDistance, gasV*gasRatio+pGas*(1-gasRatio), brakeV, brakeDealyTime,pGas,angleDis);			
+                        }
+                    }
+                    if(CannotFindTarget == 1)
+                    {
+                        CannotFindTarget = 0;
+                        printf("Warning:放弃目标%d\n", targetIndex);
+                        targetIndex++;//放弃当前目标
+                    }
+                }
+
+                //判断是否走完所有目标点
+                if (targetIndex >= pathSize )
+                { 
+                    brake(brakeV);
+                    delay_1s(3);
+                    brake(0.0);
+                    printf("MES:car finish autodrive! Wait for next path\n");
+                    reachTarget();//发送到达目的地指令
+                    compelStop1();
+                }
+                //未走完目标点，且丢失GPS，存储当前位置离下一目标距离
+                else if(G_lostGps == true)  // && targetIndex < pathSize
+                {
+                    G_dx = latToMeter(ilat, path[2*targetIndex]);
+                    G_dy = lonToMeter(ilon, path[2*targetIndex+1]);
+                }
+
+                //改变pGas
+                pGas=gasV*gasRatio+pGas*(1-gasRatio);
             }
-            
         }
-        ros::spinOnce();
     }
+    //^ros::ok循环
     // killTof();
     // pthread_exit(NULL);
 
-    printf("brake0.0 delay1s\n");
     brake(0.0);
     delay_1s(1);
+    printf("brake0.0 delay1s\n");
     return 0;
 }
-#copy-edit

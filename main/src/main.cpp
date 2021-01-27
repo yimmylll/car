@@ -447,7 +447,8 @@ int main(int argc, char **argv)
         // 获取路径
         loop_rate.sleep();
          //printf("manualMode:%d\n", manualMode);
-		if(manualMode == 1 && cloudPathValid == 1) {//手动前进模式
+		if(manualMode == 1 && cloudPathValid == 1) //手动前进模式
+        {
 			block = 0;//下发坐标默认初始无障碍
 			compelStart1();//开启强制开始
 			pstop = 1;//初始不刹车
@@ -665,7 +666,7 @@ int main(int argc, char **argv)
         }
 
 		//**************//
-		if (manualFront_go == 1) {//开始手动倒车
+		if (manualFront_go == 1) {//开始手动前进
 			printf("moveforward abs(distance)\n");
 			moveForward(angleFront, FrontgasV, FrontmoveDistance, startCntF);
 			if (frontfinish == 1) {//倒车到达目的地 标志
@@ -835,4 +836,3 @@ int main(int argc, char **argv)
     delay_1s(1);
     return 0;
 }
-#copy-edit
