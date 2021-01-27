@@ -333,6 +333,36 @@ int main(int argc, char **argv)
     */
     /**********************************************end*********************************************/
 
+    /********************************************************************************************/
+    // double dis = 0.0;
+    // double A_lat = 31.9500276371758;
+    // double A_lon = 112.085647635712;
+    // double B_lat = 31.9500273558708;
+    // double B_lon = 112.0856555958380;
+    // double C_lat = 31.9500317494093;
+    // double C_lon = 112.085653507577;
+    // double D_lat = 31.9500343215208;
+    // double D_lon = 112.085652665791;
+    // double E_lat = 31.9500352249068;
+    // double E_lon = 112.085652629901;
+    // double F_lat = 31.9500357243477;
+    // double F_lon = 112.085652217569;
+    // double G_lat = 31.9500277887066;
+    // double G_lon = 112.085647759644;
+    // dis = getDistance(A_lat, A_lon, B_lat, B_lon);
+    // printf("A-->B:%8.4f   should be 0\n", dis);
+    // dis = getDistance(A_lat, A_lon, G_lat, G_lon);
+    // printf("A-->G:%8.4f    should be 0\n", dis);
+    // dis = getDistance(B_lat, B_lon, C_lat, C_lon);
+    // printf("B-->C:%8.4f    should be 0.5\n", dis);
+    // dis = getDistance(C_lat, C_lon, D_lat, D_lon);
+    // printf("C-->D:%8.4f    should be 0.3\n", dis);
+    // dis = getDistance(D_lat, D_lon, E_lat, E_lon);
+    // printf("D-->E:%8.4f    should be 0.1\n", dis);
+    // dis = getDistance(E_lat, E_lon, F_lat, F_lon);
+    // printf("E-->F:%8.4f    should be 0.05\n", dis);
+    // return 0;
+    /**********************************************end*********************************************/
     // runTof();
     // printf("run tof OK\n");
 
