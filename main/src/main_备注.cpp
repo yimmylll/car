@@ -447,26 +447,25 @@ int main(int argc, char **argv)
         // 获取路径
         loop_rate.sleep();
          //printf("manualMode:%d\n", manualMode);
-		if(manualMode == 1 && cloudPathValid == 1) {//手动前进模式
+		if(manualMode == 1 && cloudPathValid == 1) {//手动前进模式，收到点
 			block = 0;//下发坐标默认初始无障碍
 			compelStart1();//开启强制开始
-			pstop = 1;//初始不刹车
+			pstop = 1;//暂停标志位的上一个循环状态
 	
 			//stop_DelayTimes = 31;
             vector<double>().swap(path);
             path=getPath();
             pathSize=path.size()/2;
-			targetIndex = 0;
+			targetIndex = 0;//清零目标标志位
 			printf("手动前进pathsize:%d  path[0]:%8.4f  path[1]:%8.4f \n", pathSize, path[0], path[1]);//y,x 经、纬度
            
             if(pathSize > 0) {
 				/****************************************/
-				manualFront_go = 1; //开始手动倒车
+				manualFront_go = 1; //开始手动前进
 				frontfinish = 0; //倒车到达目的地 标志
-				//manualBack_go = 0;
 				startCntF = getCarCounter();//获取当前计数值
-				G_carCounter = startCntF; //G_carCounter？
-				angleFront = (0.5 - path[1])*60.0;//反过来!
+				G_carCounter = startCntF; //更新 G_carCounter
+				angleFront = (0.5 - path[1])*60.0;//前进车角度
 				printf("angleFront:%f\n", angleFront);
 				/****************************************/
 
@@ -492,7 +491,7 @@ int main(int argc, char **argv)
     //            printf("G_dx:%f, G_dy:%f, G_angle:%f, GCar_angle:%f, G_Counter:%d\n", \
     //                    G_dx, G_dy, G_angle, G_car.ang, G_carCounter);
             }
-        } else if(manualMode == 2 && cloudPathValid == 1) {//手动倒车模式
+        } else if(manualMode == 2 && cloudPathValid == 1) {//手动倒车模式，收点
 			compelStart1();//开启强制开始
 			//stop_DelayTimes = 31;
             vector<double>().swap(path);
@@ -501,29 +500,22 @@ int main(int argc, char **argv)
 			targetIndex = 0;//走完清零
 			printf("手动  倒车pathsize:%d  path[0]:%8.4f  path[1]:%8.4f\n", pathSize, path[0], path[1]);//y,x 经、纬度
             if(pathSize > 0) {
-                //ismanualBack = true;
 				manualBack_go = 1; //开始手动倒车
 				backfinish = 0; //倒车到达目的地 标志
-				//manualBack_go = 0;
                 startCnt = getCarCounter();//获取当前计数值
-				G_carCounter = startCnt; //G_carCounter？
-                angleBack = (path[1] - 0.5)*60.0;
+				G_carCounter = startCnt; //更新G_carCounter
+                angleBack = (path[1] - 0.5)*60.0;//计算前进角度
                 printf("angleBack:%f\n", angleBack);
             }
-        } else if(targetIndex>=pathSize && cloudPathValid == 1) { // && cloudPathValid == 1 //本地测试注释掉cloudPathValid
+        } else if(targetIndex>=pathSize && cloudPathValid == 1) { //自动驾驶模式，收点
 			//if (patho == 0) {
 				block = 0;//下发坐标默认初始无障碍
-				compelStop1();//使getstart getstop为0 1
+				compelStop1();//收点后等待 开始标志下发 才开始
 				pstop = 1;//初始不刹车
-				/*gas(0.0);
-				pGas = 0;*/
-				//stop_DelayTimes = 31;
                 vector<double>().swap(path);
 				path = getPath(0);
-			// patho只是用于本地测试，获得第一条路径后由0变为1，使本地路径无法重复获得
-			//	patho++;
 				pathSize = path.size() / 2;
-				targetIndex = 0;
+				targetIndex = 0;//清零目标索引
 			//}
 			printf("pathSize = %d\n", pathSize);    
 		}
@@ -534,12 +526,12 @@ int main(int argc, char **argv)
 		//patho++;
 		// 如果找到GPS，则记录当前经纬度和航向角数据
         //printf("G_lostGps=%d\n",G_lostGps);
-		if (G_lostGps == false) {
+		if (G_lostGps == false) {//gps固定解时 记录当前坐标点
 			ilat = cfGpsLat();          // GPS坐标系
 			ilon = cfGpsLon();          // GPS坐标系
 			igpsangle = cfGpsAngle();   // GPS坐标系
 
-			//每10s发送一次当前位置
+			//每5s发送一次当前位置
 			delayTimes++;
 			if (delayTimes == 50) {
 				reportCurrentLatLon(ilat, ilon);
@@ -596,236 +588,131 @@ int main(int argc, char **argv)
 		
 		//停止小车
 		if (stop == 1 ) {
-			//if (pstop == 0) {
-			//	pstart = 0;
-			//	pstop++;
-			if (pstop == 0) {
-				gas(0.0);
+			if (pstop == 0) {//判断stop标志位上升沿
+				gas(0.0);//多点模式
 				pGas = 0;
-                if(manualMode==0){//手动模式不刹车
+                if(manualMode==0){//手动模式不刹车，自动模式下发停车指令后，刹车
                     brake(brakeV);
                 }				
-				//stop_DelayTimes = 0;
-				//printf("stop上升置stop_DelayTimes = 0\n");
 				printf("car stop!---\n");
 			}
-				
-
-//			}
-
-			//if (stop_DelayTimes <= 30) {
-			//	stop_DelayTimes++;
-			//}
-			//if (stop_DelayTimes == 30)//3s释放刹车
-			//{
-			//	//stop_DelayTimes = 0;
-			//	printf("stop_DelayTimes == 30,brake(0.0) delay1s\n");
-			//	brake(0.0);
-			//	delay_1s(1);
-			//}
-			pstop = stop;//==1
+			pstop = stop;//在下次循环中对比新循环的stop标志位状态，用于判断上升下降沿
 			continue;
 		}
 		brake(0.0);
-		pstop = 0;
+		pstop = 0;//启动小车后，当前循环的stop标志位状态就是0
 
-		//启动小车
-		//if (start == 1) {
-		//	//pstart++;
-		//	//pstop = 0;
-		//	brake(0.0);
-		//	printf("car start\n");
-
-  //          if(manualMode == 2){   //手动倒车模式 ismanualBack == true
-  //              //G_carCounter = startCnt; //G_carCounter？
-  //              //manualBack_go = 1; //开始手动倒车
-  //              //backfinish=0; //倒车到达目的地 标志
-  //          }
-		//}
         if(manualBack_go==1){//开始手动倒车
             printf("moveback abs(distance)\n");
-            moveBack(angleBack, BackgasV, BackmoveDistance, startCnt);
+            moveBack(angleBack, BackgasV, BackmoveDistance, startCnt);//手动倒车函数
             if(backfinish==1){//倒车到达目的地 标志
-                /*gas(0.0);
-                brake(brakeV);
-                delay_1s(brakeDealyTime);
-                brake(0.0);
-                delay_1s(1);*/
                 printf("wait for next manual_Back point!\n");
-                backfinish = 0;
+                backfinish = 0;//清零手动倒车完成标志位
                 targetIndex=1;
-                manualBack_go = 0;
+                manualBack_go = 0;//清零手动倒车标志位
 				compelStop1();//开启强迫停止
 				pstop = 0;
-				//stop_DelayTimes = 0;
 				printf("manual_back置stop=1，下一次应打印car stop刹死\n");
-                //break; 
             }
             continue;
         }
 
 		//**************//
-		if (manualFront_go == 1) {//开始手动倒车
+		if (manualFront_go == 1) {//开始手动前进
 			printf("moveforward abs(distance)\n");
-			moveForward(angleFront, FrontgasV, FrontmoveDistance, startCntF);
+			moveForward(angleFront, FrontgasV, FrontmoveDistance, startCntF);//手动前进函数
 			if (frontfinish == 1) {//倒车到达目的地 标志
-				/*gas(0.0);
-				brake(brakeV);
-				delay_1s(brakeDealyTime);
-				brake(0.0);
-				delay_1s(1);*/
 				printf("wait for next manual_Front point!\n");
-				frontfinish = 0;
+				frontfinish = 0;//清零手动前进结束标志位
 				targetIndex = 1;
-				manualFront_go = 0;
-				compelStop1();//开启强迫停止
-				pstop = 0;
-				//stop_DelayTimes = 0;
+				manualFront_go = 0;//清零手动前进标志位
+				compelStop1();//开启强迫停止 置stop = 1
+				pstop = 0;//使判断stop 上升沿
 				printf("manual_front置stop=1，下一次应打印car stop刹死\n");
-				//break; 
 			}
 			continue;
 		}
-		
-		//已走完所有目标点
-        // printf("targetIndex= %d\n",targetIndex);
-        // printf("pathSize= %d\n",pathSize);
-		//if(targetIndex>=pathSize){
-  //          gas(0.0);
-  //          pGas=0;
-  //          brake(brakeV);
-  //          delay_1s(3);
-  //          printf("car finish\n");
-  //          brake(0);
-  //          delay_1s(3);
-  //          //return 0;
-  //          break;
-  //          continue;
-		//}
-		
-		/*if(go==0){
-			printf("car go = %d\n",go);	
-			continue;
-		}*/
-
-
 		printf("**********************************\n");//每次小车启动且进入非倒车循环
 
 		//到达第targetIndex个目标点
 		double dis;
-        if(G_lostGps == true) {
+        if(G_lostGps == true) {//无gps固定解下距离计算
             dis = getDistanceInMeter(G_car);
              printf("G_car.x:%f  G_car.y:%f  G_dx:%f  G_dy:%f\n",G_car.x, G_car.y,G_dx, G_dy);
-        } else {
+        } else {//有gps固定解下距离计算
             dis = getDistance(ilat, ilon, path[2*targetIndex], path[2*targetIndex+1]);
 			printf("ilat:%f  ilon:%f  path[2*targetIndex]:%f  path[2*targetIndex+1]:%f   targetIndex:%d\n", ilat, ilon, path[2 * targetIndex], path[2 * targetIndex + 1],targetIndex);
         }
         printf("离目标 dis:%f\n",dis);
-	    if(dis<minDistance){
-			targetIndex++;
+	    if(dis<minDistance){//到达当前目标点
+			targetIndex++;//下一目标
             FirstWrongCnt = 0;
+            //走下一目标前，清零误点计数值，在movetarget turn函数里面，当离目标越来越远时计数值自增，当离远一定距离后，直接去下一目标点
 			printf("reach target%d!\n", targetIndex);
 			if (targetIndex >= pathSize ) {  //已走完所有目标点
-
-				/*gas(0.0);
-				pGas = 0;
-				brake(brakeV);
-				delay_1s(3);
-				printf("car finish\n");
-				brake(0.0);
-				delay_1s(3);*/
-				//v
-				// break;
-				// continue;
-				//上两句换成下面注释，手动模式下永不退出，收多点
 				if (manualMode == 0) {//非手动模式下走完退出
 					gas(0.0);
 					pGas = 0;
-					brake(brakeV);//再次循环getstart stop是1 0！！
+					brake(brakeV);//自动驾驶结束，单点模式
 					delay_1s(3);
 					printf("car finish autodrive! Wait for next path\n");
 					reachTarget();//发送到达目的地指令
-					compelStop1();
+					compelStop1();//更新停车标志位
 					pstop = 0;
-					
-					/*brake(0.0);
-					delay_1s(3);*/
-					//break;//自动模式到达目的地不退出
 					continue;
 				}
 				printf("wait for next manual_Front path\n");
 				compelStop1();//开启强迫停止
 				pstop = 0;
-				//stop_DelayTimes = 0;
 				printf("manual_front置stop=1，下一次应打印car stop刹死\n");
-                // pstop == 0;//start上升沿时已经置pstop=0了
 				continue;
 			}
-            else if(G_lostGps == true) { // && targetIndex < pathSize
+            else if(G_lostGps == true) { //没有gps固定解时，更新G_car
                 G_dx = latToMeter(ilat, path[2*targetIndex]);
                 G_dy = lonToMeter(ilon, path[2*targetIndex+1]);
             }	
-            gas(0.0);//不要一顿一顿？？？
-            pGas = 0;	
-
+            gas(0.0);//这个会令车每次走到一个目标点就顿
+            pGas = 0;	//油门从0慢慢增加到给定速度
 		} else {
             //走第targetIndex个目标点
-            if(tu){//直接绕障不可以
-                if(G_lostGps == true) {
+            if(tu){//绕障模式，遇到障碍绕开
+                if(G_lostGps == true) {//无gps固定解
                     moveTargetWithTurnInMeter(G_car, minDistance, gasV*gasRatio+pGas*(1-gasRatio), brakeV, brakeDealyTime,pGas,angleDis);
                 } else {
                     moveTargetWithTurn(ilat, ilon, path[2*targetIndex], path[2*targetIndex+1], igpsangle, minDistance, gasV*gasRatio+pGas*(1-gasRatio), brakeV, brakeDealyTime,pGas,angleDis);			
                 }
-				if (CannotFindTarget == 1) {
+				if (CannotFindTarget == 1) {//如果无法到达当前目标点，在movetargetwithturn函数里面把此标志位置1
 					CannotFindTarget = 0;
 					targetIndex++;//放弃当前目标，走下一个点
 				}
-                
-				if (targetIndex >= pathSize ) {  //已走完所有目标点
-
-                    if (manualMode == 0) {//非手动模式下走完退出
+				if (targetIndex >= pathSize ) {//已走完所有目标点
+                    if (manualMode == 0) {//自动模式下走完
                         gas(0.0);
                         pGas = 0;
-                        brake(brakeV);//再次循环getstart stop是1 0！！
+                        brake(brakeV);//刹车
                         delay_1s(3);
                         printf("car finish autodrive! Wait for next path\n");
                         reachTarget();//发送到达目的地指令
-                        compelStop1();
-                        pstop = 0;
-                        
-                        /*brake(0.0);
-                        delay_1s(3);*/
-                        //break;//自动模式到达目的地不退出
+                        compelStop1();//置stop标志位1
+                        pstop = 0;//使检测stop上升沿
                         continue;
                     }
                     printf("wait for next manual_Front path\n");
                     compelStop1();//开启强迫停止
-                    pstop = 0;
-                    //stop_DelayTimes = 0;
+                    pstop = 0;//使下次判断stop上升延
                     printf("manual_front置stop=1，下一次应打印car stop刹死\n");
-                    // pstop == 0;//start上升沿时已经置pstop=0了
                     continue;
                 }
-
-            } else {
-                if(G_lostGps == true) {
-					printf("bieyebtrad15\n");
+            } else {//避障模式，遇到障碍停车
+                if(G_lostGps == true) {//gps无固定解
                     moveTargetWithStopInMeter(G_car, minDistance, gasV*gasRatio+pGas*(1-gasRatio), brakeV, brakeDealyTime,pGas,angleDis);
-                } else {
+                } else {//gps有固定解
                     moveTargetWithStop(ilat, ilon, path[2*targetIndex], path[2*targetIndex+1], igpsangle, minDistance, gasV*gasRatio+pGas*(1-gasRatio), brakeV, brakeDealyTime,pGas,angleDis);			
                 }
             }
-            pGas=gasV*gasRatio+pGas*(1-gasRatio);
-            // printf("dis = %f\n", dis);
-            // printf("pGas = %f\n", pGas);
+            pGas=gasV*gasRatio+pGas*(1-gasRatio);//调整速度
 		}
-	//	printf("dis = %f\n", dis);
-		/*pstart=start;
-		pstop=stop;*/
         ros::spinOnce();
-
-
-        // loop_rate.sleep();//
     }
     // killTof();
     // pthread_exit(NULL);
