@@ -499,6 +499,23 @@ double moveTarget(double latOrigin, double lonOrigin, double latTarget, double l
 		// brake(0.0);
 	}
 }
+//test
+double moveTargetBack(double latOrigin, double lonOrigin, double latTarget, double lonTarget, double gpsCurrentAngle, float minDistance, float gasV, float brakeV)
+{
+	double coorSteerAngle, distance;
+	coorSteerAngle = getSteerAngle(latOrigin, lonOrigin, latTarget, lonTarget, gpsCurrentAngle);
+	distance = getDistance(latOrigin, lonOrigin, latTarget, lonTarget);
+	if(distance > minDistance) {
+		brake(0.0);
+		gas(gasV);
+		steer(-coorSteerAngle);
+	} else {
+		gas(0.0);
+		// brake(brakeV);
+		// delay_1s(brakeDealyTime);
+		// brake(0.0);
+	}
+}
 
 double moveTargetWithStop(double latOrigin, double lonOrigin, double latTarget, double lonTarget, double gpsCurrentAngle, float minDistance, float gasV, float brakeV, int brakeDealyTime,float & pGas,float angleDis)
 {
